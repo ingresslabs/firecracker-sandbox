@@ -331,10 +331,12 @@ build-simple-rootfs:
 build-all: build-kernel build-simple-rootfs
 	@echo "Build complete. Kernel and rootfs are ready for Firecracker."
 
-WG_REMOTE ?= root@141.105.65.227
-
 .PHONY: wireguard-e2e
 wireguard-e2e:
+	@if [ -z "$(WG_REMOTE)" ]; then \
+		echo "Usage: make wireguard-e2e WG_REMOTE=root@host"; \
+		exit 2; \
+	fi
 	@tools/install_wireguard.sh "$(WG_REMOTE)"
 
 .PHONY: console-log
@@ -355,4 +357,3 @@ install-init-script:
 	@sudo chmod +x mnt/sbin/init
 	@sudo umount mnt
 	@sudo rmdir mnt
-

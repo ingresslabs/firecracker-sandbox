@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEFAULT_REMOTE="root@141.105.65.227"
 DEFAULT_IFACE="wg0"
 DEFAULT_PORT="51820"
 DEFAULT_NETWORK="10.77.0.0/24"
@@ -235,7 +234,12 @@ local_main() {
         exit 0
     fi
 
-    local remote="${1:-${WG_REMOTE:-$DEFAULT_REMOTE}}"
+    local remote="${1:-${WG_REMOTE:-}}"
+    if [[ -z "$remote" ]]; then
+        usage >&2
+        die "missing remote target; pass root@host or set WG_REMOTE"
+    fi
+
     local endpoint="${WG_ENDPOINT:-${remote##*@}}"
     endpoint="${endpoint%%:*}"
 
