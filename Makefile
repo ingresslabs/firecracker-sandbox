@@ -21,6 +21,9 @@ help:
 	@echo "  build-kernel - Download and build the latest stable Linux kernel for Firecracker."
 	@echo "  build-rootfs - Create a Debian rootfs that matches the latest kernel."
 	@echo "  build-all    - Build both the kernel and rootfs for Firecracker."
+	@echo "  wireguard-e2e - Install WireGuard on WG_REMOTE and run an end-to-end tunnel test."
+	@echo "  lab-up      - Provision WireGuard, boot a Firecracker VM, and SSH-test it."
+	@echo "  lab-down    - Stop the remote Firecracker lab VM and remove lab networking."
 	@echo "  login       - Attempt to log into the running MicroVM via vsock socket."
 	@echo "  list-vms    - List all running Firecracker MicroVMs with their details."
 	@echo "  net-info    - Display network information for running MicroVMs."
@@ -330,6 +333,30 @@ build-simple-rootfs:
 build-all: build-kernel build-simple-rootfs
 	@echo "Build complete. Kernel and rootfs are ready for Firecracker."
 
+.PHONY: wireguard-e2e
+wireguard-e2e:
+	@if [ -z "$(WG_REMOTE)" ]; then \
+		echo "Usage: make wireguard-e2e WG_REMOTE=root@host"; \
+		exit 2; \
+	fi
+	@tools/install_wireguard.sh "$(WG_REMOTE)"
+
+.PHONY: lab-up
+lab-up:
+	@if [ -z "$(REMOTE)" ]; then \
+		echo "Usage: make lab-up REMOTE=root@host"; \
+		exit 2; \
+	fi
+	@tools/lab.sh up "$(REMOTE)"
+
+.PHONY: lab-down
+lab-down:
+	@if [ -z "$(REMOTE)" ]; then \
+		echo "Usage: make lab-down REMOTE=root@host"; \
+		exit 2; \
+	fi
+	@tools/lab.sh down "$(REMOTE)"
+
 .PHONY: console-log
 console-log:
 	@if [ -f firecracker-console.log ]; then \
@@ -348,5 +375,3 @@ install-init-script:
 	@sudo chmod +x mnt/sbin/init
 	@sudo umount mnt
 	@sudo rmdir mnt
-
-
